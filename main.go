@@ -77,7 +77,7 @@ type response struct {
 const (
 	emptyRequestURL = "request url is empty"
 
-	cacheTime  = 2
+	cacheTime  = 15
 	maxResults = "3"
 )
 
