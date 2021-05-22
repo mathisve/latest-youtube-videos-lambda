@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"github.com/aws/aws-lambda-go/lambda"
 	"io/ioutil"
 	"log"
@@ -20,9 +19,9 @@ var (
 
 	requestURL string
 
-	lastResponse     string
-	lastResponseTime time.Time
-	lastResponseLock sync.Mutex
+	lastCache     string
+	lastCacheTime time.Time
+	lastCacheLock sync.Mutex
 )
 
 type parameter struct {
@@ -78,8 +77,8 @@ type response struct {
 const (
 	emptyRequestURL = "request url is empty"
 
-	cacheTime = 15
-	maxResults = 10
+	cacheTime  = 2
+	maxResults = "3"
 )
 
 func init() {
@@ -94,15 +93,15 @@ func init() {
 		log.Println(err)
 	}
 
-	lastResponseLock.Lock()
-	defer lastResponseLock.Unlock()
+	lastCacheLock.Lock()
+	defer lastCacheLock.Unlock()
 
-	lastResponse, err = getData(ctx)
+	lastCache, err = getData(ctx)
 	if err != nil {
 		log.Println(err)
 	}
 
-	lastResponseTime = time.Now()
+	lastCacheTime = time.Now()
 
 }
 
@@ -118,7 +117,7 @@ func getParameters() []parameter {
 		},
 		{
 			key:   "maxResults",
-			value: string(maxResults),
+			value: maxResults,
 		},
 		{
 			key:   "order",
@@ -148,7 +147,6 @@ func makeRequestURL(ctx context.Context) (string, error) {
 	}
 
 	req.URL.RawQuery = q.Encode()
-	fmt.Println(req.URL.String())
 	return req.URL.String(), nil
 }
 
@@ -185,39 +183,40 @@ func getData(ctx context.Context) (r string, err error) {
 
 }
 
+func cacheExpired() bool {
+	return time.Now().Unix() > lastCacheTime.Add(time.Minute*cacheTime).Unix()
+}
+
 func Handler(ctx context.Context) (string, error) {
-	lastResponseLock.Lock()
+	lastCacheLock.Lock()
+	defer lastCacheLock.Unlock()
 
-	if lastResponse == "" {
-		lastResponse, err := getData(ctx)
+	var err error
+	if lastCache == "" {
+		log.Println("no cache, getting data")
+		lastCache, err = getData(ctx)
 		if err != nil {
-			return lastResponse, err
+			return lastCache, err
 		}
 
-		lastResponseTime = time.Now()
-	} else if lastResponseTime.Add(-time.Minute*cacheTime).Unix() > lastResponseTime.Add(-time.Minute*cacheTime).Unix() {
-		lastResponse, err := getData(ctx)
+		lastCacheTime = time.Now()
+
+	} else if cacheExpired() {
+		log.Println("cache expired, getting data")
+		lastCache, err = getData(ctx)
 		if err != nil {
-			return lastResponse, err
+			return lastCache, err
 		}
 
-		lastResponseTime = time.Now()
+	} else {
+		log.Println("hitting cache")
 	}
 
-	lastResponseLock.Unlock()
+	lastCacheTime = time.Now()
 
-	return lastResponse, nil
+	return lastCache, nil
 }
 
 func main() {
 	lambda.Start(Handler)
 }
-
-//func main() {
-//	r, err := Handler(context.Background())
-//	if err != nil {
-//		log.Println(err)
-//	}
-//
-//	fmt.Println(r)
-//}
