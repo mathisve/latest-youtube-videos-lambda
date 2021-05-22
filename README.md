@@ -1,3 +1,5 @@
+![build](https://github.com/mathisve/latest-youtube-videos-lambda/actions/workflows/go.yaml/badge.svg)
+
 # latest-youtube-videos-lambda
 Serverless Lambda function to get the latest Youtube videos of a channel.
 
@@ -8,13 +10,11 @@ This is what I did here.
 You need to set these environment variables in the AWS Lambda console! **Ohterwise it will not work!**
 Get an API key [here](https://console.cloud.google.com/apis/credentials)! Remember that you need to Activate the Youtube data API too!
 
-`apiKey` = `{your GCP API key}`
-
-`channelId` = `UCgVMmySjPUNHT60iVEpcNkQ`
+![environment variables](https://raw.githubusercontent.com/mathisve/latest-youtube-videos-lambda/master/img/youtubeapi.png)
 
 ## Caching
 This function caches the response from the Youtube API for **15 minutes**.
-If more than 10 minutes have passed since the last request, it will query for fresh data.
+If more than 15 minutes have passed since the last request, it will query the youtube API for fresh data.
 This can be changed by altering the `cacheTime` constant.
 
 ## Results
