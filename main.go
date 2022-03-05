@@ -4,18 +4,25 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"github.com/aws/aws-lambda-go/lambda"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"sync"
 	"time"
+
+	"github.com/aws/aws-lambda-go/lambda"
+)
+
+const (
+	emptyRequestURL = "request url is empty"
+	cacheTime       = 15
 )
 
 var (
-	apiKey    string
-	channelId string
+	apiKey     string
+	channelId  string
+	maxResults string
 
 	requestURL string
 
@@ -74,16 +81,13 @@ type response struct {
 	RegionCode string `json:"regionCode"`
 }
 
-const (
-	emptyRequestURL = "request url is empty"
-
-	cacheTime  = 15
-	maxResults = "3"
-)
-
 func init() {
 	apiKey = os.Getenv("apiKey")
 	channelId = os.Getenv("channelId")
+	maxResults = os.Getenv("maxResults")
+	if maxResults == "" {
+		maxResults = "3"
+	}
 
 	ctx := context.Background()
 

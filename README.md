@@ -18,7 +18,7 @@ If more than 15 minutes have passed since the last request, it will query the yo
 This can be changed by altering the `cacheTime` constant.
 
 ## Results
-By default it will only query for the **10 latest videos**.
+By default it will only query for the **3 latest videos**.
 This too can be altered by changing the `maxResults` constant.
 
 ## Thank you!!
