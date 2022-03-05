@@ -4,3 +4,6 @@ archive.zip
 
 # IDE
 .idea/
+
+# OS 
+.DS_Store

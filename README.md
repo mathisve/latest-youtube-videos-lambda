@@ -21,4 +21,7 @@ This can be changed by altering the `cacheTime` constant.
 By default it will only query for the **3 latest videos**.
 This too can be altered by changing the `maxResults` constant.
 
+## Compile
+`GOARCH=amd64 GOOS=linux go build main.go && zip archive.zip main`
+
 ## Thank you!!
